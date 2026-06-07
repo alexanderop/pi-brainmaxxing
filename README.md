@@ -49,7 +49,7 @@ Install once, globally — it then works in **every** project.
 From a tagged GitHub release:
 
 ```bash
-pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.1
+pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.2
 ```
 
 Or from npm:
@@ -61,7 +61,7 @@ pi install npm:pi-brainmaxxing
 To pin it in `~/.pi/agent/settings.json`:
 
 ```json
-{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.1"] }
+{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.2"] }
 ```
 
 To try it from source without installing:
@@ -85,6 +85,20 @@ you ▸  git add brain && git commit -m "add brain"
 
 `/brain init` drops a starter vault (16 engineering principles + an index) into your
 repo root. Commit it like any other code.
+
+If the repo already has docs such as `AGENTS.md`, `docs/`, ADRs, or Cursor rules,
+Brain asks first instead of taking over. The recommended path keeps those docs where
+they are and creates `brain/external-docs.md` as an index:
+
+```
+you ▸  /brain init
+pi  ▸  Found existing project docs:
+       - AGENTS.md
+       - docs
+
+       Recommended: keep them where they are and create a Brain index.
+       Run: /brain init --mode=index
+```
 
 ### 2. Just work — the agent reads the brain automatically
 
@@ -307,7 +321,10 @@ The six skills form a loop that keeps the brain sharp over time:
 | Command       | What it does |
 |---------------|--------------|
 | `/brain`      | Show where the brain lives and how many notes it holds |
-| `/brain init` | Bootstrap the starter vault into the project (idempotent — never overwrites) |
+| `/brain init` | Bootstrap the starter vault; asks first if existing docs are detected |
+| `/brain init --mode=index` | Bootstrap Brain and add `external-docs.md` links to existing docs |
+| `/brain migrate` | Ask how to adopt existing docs for an existing brain |
+| `/brain migrate --mode=index` | Add `external-docs.md` links without moving or copying docs |
 | `/reflect`    | Review this session and persist learnings to the brain |
 | `/ruminate`   | Mine past Pi sessions for patterns `reflect` missed |
 | `/meditate`   | Audit and prune the brain; evolve principles and skills |
@@ -388,8 +405,8 @@ Release flow:
 ```bash
 git status --porcelain=v1 -b
 git add .
-git commit -m "chore: prepare v0.1.1 release"
-git tag -a v0.1.1 -m "v0.1.1"
+git commit -m "chore: prepare v0.1.2 release"
+git tag -a v0.1.2 -m "v0.1.2"
 git push origin main --tags
 ```
 

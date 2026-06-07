@@ -140,6 +140,38 @@ describe("brainmaxxing extension wiring", () => {
 		expect(index).toContain("[[codebase/gotcha]]");
 	});
 
+	it("asks before initializing when existing docs are detected", async () => {
+		fs.writeFileSync(path.join(tmp, "AGENTS.md"), "# Agents\n");
+		fs.mkdirSync(path.join(tmp, "docs"));
+
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+		const brain = rec.commands.get("brain");
+		const ctx = ctxFor(tmp);
+
+		await brain?.("init", ctx);
+
+		expect(fs.existsSync(path.join(tmp, "brain"))).toBe(false);
+		expect(ctx._notes.join("\n")).toContain("Found existing project docs");
+		expect(ctx._notes.join("\n")).toContain("/brain init --mode=index");
+	});
+
+	it("indexes existing docs in place when the developer chooses index mode", async () => {
+		fs.writeFileSync(path.join(tmp, "AGENTS.md"), "# Agents\n");
+		fs.mkdirSync(path.join(tmp, "docs"));
+
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+		const brain = rec.commands.get("brain");
+
+		await brain?.("init --mode=index", ctxFor(tmp));
+
+		const externalDocs = fs.readFileSync(path.join(tmp, "brain", "external-docs.md"), "utf8");
+		expect(externalDocs).toContain("[AGENTS.md](../AGENTS.md)");
+		expect(externalDocs).toContain("[docs](../docs/)");
+		expect(fs.readFileSync(path.join(tmp, "brain", "index.md"), "utf8")).toContain("[[external-docs]]");
+	});
+
 	it("forwards /reflect to the skill command, passing args through", async () => {
 		const { pi, rec } = makeMockPi();
 		brainmaxxing(pi as never);

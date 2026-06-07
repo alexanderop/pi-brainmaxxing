@@ -2,6 +2,7 @@
 
 ## Codebase
 - [[codebase/brain-index-watcher]]
+- [[codebase/brain-init-migration-ux]]
 - [[codebase/memory-delegation]]
 - [[codebase/memory-delegation-tool]]
 - [[codebase/pi-style-alignment]]

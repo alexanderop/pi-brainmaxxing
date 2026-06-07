@@ -8,12 +8,21 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { BootstrapOperations } from "./bootstrap.js";
 import type { LocateOperations } from "./locate.js";
+import type { DocsDiscoveryOperations, DocsIndexOperations } from "./migrate.js";
 import type { ReindexOperations } from "./reindex.js";
 import type { BrainWatchOperations } from "./watch.js";
 
 export function isDirectory(p: string): boolean {
 	try {
 		return fs.statSync(p).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+export function isFile(p: string): boolean {
+	try {
+		return fs.statSync(p).isFile();
 	} catch {
 		return false;
 	}
@@ -52,6 +61,16 @@ export const nodeBootstrapOps: BootstrapOperations = {
 	exists: (p) => fs.existsSync(p),
 	listMarkdown,
 	readFile: (p) => fs.readFileSync(p, "utf8"),
+	mkdirp: (dir) => {
+		fs.mkdirSync(dir, { recursive: true });
+	},
+	writeFile: (p, content) => fs.writeFileSync(p, content, "utf8"),
+};
+
+export const nodeDocsDiscoveryOps: DocsDiscoveryOperations = { isDirectory, isFile };
+
+export const nodeDocsIndexOps: DocsIndexOperations = {
+	exists: (p) => fs.existsSync(p),
 	mkdirp: (dir) => {
 		fs.mkdirSync(dir, { recursive: true });
 	},

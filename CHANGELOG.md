@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-06-07
+
+### Added
+
+- `/brain init` now detects existing docs and asks the developer before creating a vault.
+- `/brain init --mode=index` and `/brain migrate --mode=index` create `brain/external-docs.md` links to existing docs without moving or copying them.
+
 ## [0.1.1] - 2026-06-07
 
 ### Added
@@ -24,5 +31,6 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Lightweight `remember` tool for queueing possible durable memories for background review.
 - Release-ready Pi package metadata for git and npm installation.
 
+[0.1.2]: https://github.com/alexanderop/pi-brainmaxxing/releases/tag/v0.1.2
 [0.1.1]: https://github.com/alexanderop/pi-brainmaxxing/releases/tag/v0.1.1
 [0.1.0]: https://github.com/alexanderop/pi-brainmaxxing/releases/tag/v0.1.0
