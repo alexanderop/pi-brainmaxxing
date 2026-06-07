@@ -9,6 +9,7 @@ import * as path from "node:path";
 import type { BootstrapOperations } from "./bootstrap.js";
 import type { LocateOperations } from "./locate.js";
 import type { ReindexOperations } from "./reindex.js";
+import type { BrainWatchOperations } from "./watch.js";
 
 export function isDirectory(p: string): boolean {
 	try {
@@ -55,4 +56,37 @@ export const nodeBootstrapOps: BootstrapOperations = {
 		fs.mkdirSync(dir, { recursive: true });
 	},
 	writeFile: (p, content) => fs.writeFileSync(p, content, "utf8"),
+};
+
+/** Recursively collect absolute directory paths under `dir`, including `dir`. */
+export function listDirectories(dir: string): string[] {
+	let entries: fs.Dirent[];
+	try {
+		entries = fs.readdirSync(dir, { withFileTypes: true });
+	} catch {
+		return [];
+	}
+
+	const out = [dir];
+	for (const entry of entries) {
+		if (entry.isDirectory()) out.push(...listDirectories(path.join(dir, entry.name)));
+	}
+	return out;
+}
+
+export const nodeWatchOps: BrainWatchOperations = {
+	listDirectories,
+	watchDirectory(dir, onChange) {
+		const watcher = fs.watch(dir, { persistent: false }, onChange);
+		watcher.unref?.();
+		return watcher;
+	},
+	setTimeout(callback, ms) {
+		const timer = setTimeout(callback, ms);
+		timer.unref?.();
+		return timer;
+	},
+	clearTimeout(timer) {
+		clearTimeout(timer as ReturnType<typeof setTimeout>);
+	},
 };

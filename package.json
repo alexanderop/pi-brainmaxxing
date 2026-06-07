@@ -1,6 +1,6 @@
 {
   "name": "pi-brainmaxxing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "🧠 Project-local persistent memory for Pi. A committed brain/ vault (Obsidian-compatible) with an auto-rebuilt wikilink index, session injection, secret-scanned writes, and a reflect/ruminate/meditate learning loop. Inspired by poteto/brainmaxxing, optimized for Pi.",
   "type": "module",
   "main": "src/extension/index.ts",

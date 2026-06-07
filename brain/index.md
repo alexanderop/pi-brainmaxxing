@@ -1,9 +1,11 @@
 # Brain
 
 ## Codebase
+- [[codebase/brain-index-watcher]]
 - [[codebase/memory-delegation]]
 - [[codebase/memory-delegation-tool]]
 - [[codebase/pi-style-alignment]]
+- [[codebase/release-workflow]]
 
 ## Plans
 - [[plans/index]]

@@ -15,7 +15,7 @@
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { nodeLocateOps, nodeReindexOps } from "../brain/fs-ops.js";
+import { nodeLocateOps, nodeReindexOps, nodeWatchOps } from "../brain/fs-ops.js";
 import { buildBrainContext, buildUninitializedContext } from "../brain/inject.js";
 import {
 	type BrainSnapshot,
@@ -23,6 +23,7 @@ import {
 	loadBrainSnapshot,
 	reindexAfterBrainMutation,
 } from "../brain/session-state.js";
+import { watchBrainIndex } from "../brain/watch.js";
 import { registerBrainCommand } from "../commands/brain-command.js";
 import { registerLoopCommands } from "../commands/loop-commands.js";
 import { setupAutoReflect } from "../handlers/auto-reflect.js";
@@ -34,6 +35,7 @@ export default function brainmaxxing(pi: ExtensionAPI) {
 	// Cached brain index content, refreshed on session start and after writes.
 	let indexContent: string | null = null;
 	let brainExists = false;
+	let stopBrainWatcher: (() => void) | undefined;
 
 	const ops = { locate: nodeLocateOps, reindex: nodeReindexOps };
 
@@ -44,12 +46,27 @@ export default function brainmaxxing(pi: ExtensionAPI) {
 		return snapshot;
 	}
 
-	// ── 1. Load the brain index on session start ──
+	// ── 1. Load the brain index on session start and watch for external edits ──
 	pi.on("session_start", async (_event, ctx) => {
+		stopBrainWatcher?.();
+		stopBrainWatcher = undefined;
 		const snapshot = refresh(ctx.cwd);
+		if (snapshot.location.exists) {
+			stopBrainWatcher = watchBrainIndex({
+				brainDir: snapshot.location.brainDir,
+				reindexOps: nodeReindexOps,
+				watchOps: nodeWatchOps,
+				onUpdated: () => refresh(ctx.cwd),
+			});
+		}
 		if (ctx.hasUI && snapshot.location.exists) {
 			ctx.ui.notify(`Brain loaded — ${snapshot.noteCount} notes from ${snapshot.location.brainDir}`, "info");
 		}
+	});
+
+	pi.on("session_shutdown", async () => {
+		stopBrainWatcher?.();
+		stopBrainWatcher = undefined;
 	});
 
 	// ── 2. Contribute the learning-loop skills (bundled) plus the project's own

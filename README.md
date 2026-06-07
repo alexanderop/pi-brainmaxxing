@@ -49,7 +49,7 @@ Install once, globally — it then works in **every** project.
 From a tagged GitHub release:
 
 ```bash
-pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.0
+pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.1
 ```
 
 Or from npm:
@@ -61,7 +61,7 @@ pi install npm:pi-brainmaxxing
 To pin it in `~/.pi/agent/settings.json`:
 
 ```json
-{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.0"] }
+{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.1"] }
 ```
 
 To try it from source without installing:
@@ -205,6 +205,9 @@ This is the heart of it. Two hooks fire around the LLM:
   │  tool_result  │        yes ─▶ rebuild brain/index.md   (see §5)
   └───────────────┘        no  ─▶ ignore
         │
+        │         external editor / git / shell changes are also caught by a
+        │         debounced filesystem watcher while the session is running
+        │
         ▼
   turn ends
         │
@@ -253,7 +256,9 @@ the `tool_result` hook still rebuilds the index.
 
 `brain/index.md` is a pure function of the files on disk — **no LLM involved**, so it's
 cheap and deterministic. It only rewrites when the *set* of files actually changed, so
-your own curated ordering survives edits that don't add or remove notes.
+your own curated ordering survives edits that don't add or remove notes. Pi tool writes
+trigger a precise post-tool reindex; external editor/git/shell changes are caught by a
+debounced filesystem watcher while the session is running.
 
 ```
   brain/ on disk                          brain/index.md (generated)
@@ -321,7 +326,7 @@ If you know the original brainmaxxing (Claude Code hooks), here's the translatio
 | Brainmaxxing (Claude Code)             | This extension (Pi)                         |
 |----------------------------------------|---------------------------------------------|
 | `SessionStart` hook injects the index  | `session_start` + `before_agent_start`      |
-| `PostToolUse` hook rebuilds the index  | `tool_result` event on `brain/` edits/writes|
+| `PostToolUse` hook rebuilds the index  | `tool_result` event plus a filesystem watcher for `brain/` changes |
 | `.agents/skills/` learning loop        | skills exposed via `resources_discover`     |
 | starter vault + `CLAUDE.md` guidance   | `/brain init` + injected guidance           |
 | (none)                                 | `brain` tool with **secret-scanned** writes |
@@ -383,8 +388,8 @@ Release flow:
 ```bash
 git status --porcelain=v1 -b
 git add .
-git commit -m "chore: prepare v0.1.0 release"
-git tag -a v0.1.0 -m "v0.1.0"
+git commit -m "chore: prepare v0.1.1 release"
+git tag -a v0.1.1 -m "v0.1.1"
 git push origin main --tags
 ```
 
