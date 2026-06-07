@@ -1,0 +1,54 @@
+{
+  "name": "pi-brainmaxxing",
+  "version": "0.1.0",
+  "description": "🧠 Project-local persistent memory for Pi. A committed brain/ vault (Obsidian-compatible) with an auto-rebuilt wikilink index, session injection, secret-scanned writes, and a reflect/ruminate/meditate learning loop. Inspired by poteto/brainmaxxing, optimized for Pi.",
+  "type": "module",
+  "main": "src/extension/index.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/extension/index.ts"
+    ]
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "biome lint src test",
+    "fmt": "biome format --write src test",
+    "pi": "pi --no-extensions -e .",
+    "test": "vitest run",
+    "verify": "pnpm run check && pnpm run lint && pnpm run test"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "memory",
+    "persistent-memory",
+    "brain",
+    "obsidian",
+    "learning-loop",
+    "brainmaxxing",
+    "agent"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexanderop/pi-brainmaxxing.git"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": ">=0.74.0",
+    "@earendil-works/pi-coding-agent": ">=0.74.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@earendil-works/pi-ai": "^0.78.0",
+    "@earendil-works/pi-coding-agent": "^0.78.0",
+    "@types/node": "^24.0.0",
+    "typebox": "1.1.38",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

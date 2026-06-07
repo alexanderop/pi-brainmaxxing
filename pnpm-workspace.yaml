@@ -1,0 +1,8 @@
+allowBuilds:
+  '@biomejs/biome': true
+  '@google/genai': true
+  esbuild: true
+  protobufjs: true
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - esbuild
