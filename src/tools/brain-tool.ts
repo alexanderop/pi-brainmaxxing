@@ -17,8 +17,8 @@ import {
 	withFileMutationQueue,
 } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { locateBrain } from "../brain/locate.js";
 import { nodeBootstrapOps, nodeLocateOps, nodeReindexOps } from "../brain/fs-ops.js";
+import { locateBrain } from "../brain/locate.js";
 import { reindexBrain } from "../brain/reindex.js";
 import { formatFindings, scanForSecrets } from "../scan/secrets.js";
 
@@ -29,9 +29,7 @@ const parameters = Type.Object({
 			description: "Vault-relative path, e.g. 'codebase/deploy-gotchas.md'. Required for read/write.",
 		}),
 	),
-	content: Type.Optional(
-		Type.String({ description: "Full markdown content to write. Required for write." }),
-	),
+	content: Type.Optional(Type.String({ description: "Full markdown content to write. Required for write." })),
 	allow_secrets: Type.Optional(
 		Type.Boolean({
 			description: "Set true only if a secret-scan match is a deliberate false positive.",
@@ -108,15 +106,12 @@ export function registerBrainTool(pi: ExtensionAPI): void {
 				}
 				const reindex = reindexBrain(loc.brainDir, nodeReindexOps);
 
-				const warn =
-					findings.length > 0 ? ` (secret-scan overridden for ${findings.length} match)` : "";
+				const warn = findings.length > 0 ? ` (secret-scan overridden for ${findings.length} match)` : "";
 				return {
 					content: [
 						{
 							type: "text",
-							text: `Wrote brain/${params.path}${warn}. Index ${
-								reindex.changed ? "rebuilt" : "unchanged"
-							}.`,
+							text: `Wrote brain/${params.path}${warn}. Index ${reindex.changed ? "rebuilt" : "unchanged"}.`,
 						},
 					],
 					details: { path: params.path, indexChanged: reindex.changed },

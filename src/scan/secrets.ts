@@ -63,7 +63,5 @@ export function scanForSecrets(content: string): SecretFinding[] {
 
 /** Render findings as a single human-readable warning string. */
 export function formatFindings(findings: SecretFinding[]): string {
-	return findings
-		.map((f) => `  • ${f.kind} (line ${f.line}): ${f.preview}`)
-		.join("\n");
+	return findings.map((f) => `  • ${f.kind} (line ${f.line}): ${f.preview}`).join("\n");
 }

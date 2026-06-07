@@ -22,8 +22,7 @@ function assetsBrainDir(): string {
 export function registerBrainCommand(pi: ExtensionAPI): void {
 	pi.registerCommand("brain", {
 		description: "Show brain status, or `init` to create the project vault",
-		getArgumentCompletions: (prefix) =>
-			"init".startsWith(prefix) ? [{ value: "init", label: "init" }] : null,
+		getArgumentCompletions: (prefix) => ("init".startsWith(prefix) ? [{ value: "init", label: "init" }] : null),
 		handler: async (args, ctx) => {
 			const loc = locateBrain(ctx.cwd, nodeLocateOps);
 			const sub = args.trim();

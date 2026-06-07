@@ -68,10 +68,11 @@ describe("brainmaxxing extension wiring", () => {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	});
 
-	it("registers the brain tool and loop commands", () => {
+	it("registers the brain and remember tools and loop commands", () => {
 		const { pi, rec } = makeMockPi();
 		brainmaxxing(pi as never);
 		expect(rec.tools).toContain("brain");
+		expect(rec.tools).toContain("remember");
 		expect([...rec.commands.keys()]).toEqual(
 			expect.arrayContaining(["brain", "reflect", "ruminate", "meditate", "plan", "review"]),
 		);
@@ -85,7 +86,11 @@ describe("brainmaxxing extension wiring", () => {
 		brainmaxxing(pi as never);
 
 		await rec.fire("session_start", { reason: "startup" }, ctxFor(tmp));
-		const result = ((await rec.fire("before_agent_start", { systemPrompt: "BASE" }, ctxFor(tmp))) as Array<{ systemPrompt: string }>)[0] as { systemPrompt: string };
+		const result = (
+			(await rec.fire("before_agent_start", { systemPrompt: "BASE" }, ctxFor(tmp))) as Array<{
+				systemPrompt: string;
+			}>
+		)[0] as { systemPrompt: string };
 
 		expect(result.systemPrompt).toContain("BASE");
 		expect(result.systemPrompt).toContain("<brain-context>");
@@ -97,9 +102,26 @@ describe("brainmaxxing extension wiring", () => {
 		brainmaxxing(pi as never);
 
 		await rec.fire("session_start", { reason: "startup" }, ctxFor(tmp));
-		const result = ((await rec.fire("before_agent_start", { systemPrompt: "BASE" }, ctxFor(tmp))) as Array<{ systemPrompt: string }>)[0] as { systemPrompt: string };
+		const result = (
+			(await rec.fire("before_agent_start", { systemPrompt: "BASE" }, ctxFor(tmp))) as Array<{
+				systemPrompt: string;
+			}>
+		)[0] as { systemPrompt: string };
 
 		expect(result.systemPrompt).toContain("/brain init");
+	});
+
+	it("contributes bundled skills and project brain skills", async () => {
+		fs.mkdirSync(path.join(tmp, "brain", "skills"), { recursive: true });
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+
+		const result = (await rec.fire("resources_discover", { reason: "startup", cwd: tmp }, ctxFor(tmp)))[0] as {
+			skillPaths: string[];
+		};
+
+		expect(result.skillPaths.some((skillPath) => skillPath.endsWith(path.join("assets", "skills")))).toBe(true);
+		expect(result.skillPaths).toContain(path.join(tmp, "brain", "skills"));
 	});
 
 	it("rebuilds the index when an edit adds a brain file", async () => {

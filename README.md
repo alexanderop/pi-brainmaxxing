@@ -38,21 +38,30 @@ Code), rebuilt as a native Pi extension.
 - [Commands](#commands)
 - [How it maps to Pi](#how-it-maps-to-pi)
 - [Development](#development)
+- [Release](#release)
 
 ---
 
 ## Install
 
-Install once, globally — it then works in **every** project:
+Install once, globally — it then works in **every** project.
+
+From a tagged GitHub release:
+
+```bash
+pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.0
+```
+
+Or from npm:
 
 ```bash
 pi install npm:pi-brainmaxxing
 ```
 
-…or pin it in `~/.pi/agent/settings.json`:
+To pin it in `~/.pi/agent/settings.json`:
 
 ```json
-{ "packages": ["npm:pi-brainmaxxing"] }
+{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.0"] }
 ```
 
 To try it from source without installing:
@@ -88,17 +97,21 @@ pi  ▸  (sees brain/index.md lists codebase/upload-gotchas → reads it →
         learns the S3 client already retries → writes the smaller fix)
 ```
 
-### 3. Teach it when it learns something
+### 3. It teaches itself — and you can still force a reflection
 
-When the agent discovers a gotcha or you correct it, capture it:
+When `brain/` exists, the extension automatically reviews the conversation in the
+background: after likely corrections, every few turns/tool calls, and before
+compaction/shutdown. It only asks the child agent to write durable project knowledge.
+
+You can still force the same loop explicitly:
 
 ```
 you ▸  /reflect
 pi  ▸  Wrote brain/codebase/upload-retries.md. Index rebuilt.
 ```
 
-Or the agent writes directly via its `brain` tool mid-task — no command needed.
-Either way, `brain/index.md` updates itself.
+The agent can also write directly via its `brain` tool mid-task. Either way,
+`brain/index.md` updates itself.
 
 ### 4. Keep it healthy (occasionally)
 
@@ -113,7 +126,7 @@ That's the whole loop. **`/reflect` alone gets you most of the value.**
 
 ## What happens under the hood
 
-The extension is a TypeScript module Pi loads at startup. It subscribes to four
+The extension is a TypeScript module Pi loads at startup. It subscribes to Pi
 lifecycle events and registers one tool + a handful of commands. No daemon, no
 database — just markdown files and Pi events.
 
@@ -194,6 +207,11 @@ This is the heart of it. Two hooks fire around the LLM:
         │
         ▼
   turn ends
+        │
+        ▼
+  ┌───────────────┐   every 10 turns / 15 tool calls, after likely corrections,
+  │  auto-reflect │   or before compaction/shutdown: spawn a guarded child Pi
+  └───────────────┘   review that writes durable learnings via the `brain` tool
 ```
 
 Key idea: the agent never gets the *whole* brain dumped into context — only the
@@ -346,6 +364,35 @@ Layout:
   └── assets/
       ├── brain/            starter vault (principles + index)
       └── skills/           reflect · ruminate · meditate · plan · review · brain
+```
+
+---
+
+## Release
+
+Before tagging a release:
+
+```bash
+pnpm run verify
+npm pack --dry-run
+pnpm publish --dry-run --access public --no-git-checks
+```
+
+Release flow:
+
+```bash
+git status --porcelain=v1 -b
+git add .
+git commit -m "chore: prepare v0.1.0 release"
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin main --tags
+```
+
+Then create a GitHub Release from the tag and paste the matching `CHANGELOG.md`
+entry. If publishing to npm too, run:
+
+```bash
+pnpm publish --access public
 ```
 
 ---

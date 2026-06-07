@@ -23,6 +23,7 @@ creates elsewhere are the **data**.
   - `fs-ops.ts` — the **only** place `node:fs` is touched for the above.
 - `src/scan/secrets.ts` — pre-write secret scan (pure).
 - `src/tools/brain-tool.ts` — the LLM-callable `brain` tool.
+- `src/handlers/auto-reflect.ts` — background brain maintenance (correction detection, periodic review, flush review) via guarded child Pi runs.
 - `src/commands/` — `/brain` and the loop-skill forwarders.
 - `src/assets/brain/` — starter vault. `src/assets/skills/` — the six skills.
 
