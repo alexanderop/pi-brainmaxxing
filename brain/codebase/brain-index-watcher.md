@@ -1,8 +1,12 @@
 # Brain Index Watcher
 
-The auto-index path has two layers:
+The generated root index (`brain/index.md`) is auto-maintained; agents should write, edit, add, or remove normal brain notes instead of touching the index directly.
 
-- Precise Pi-tool path: `src/extension/index.ts` listens for `tool_result` from built-in `edit`/`write` touching `brain/`, and the `brain` tool reindexes after secret-scanned writes.
+The auto-index path has three layers:
+
+- Guard rail before writes: `src/extension/index.ts` listens for `tool_call` from built-in `edit`/`write` and blocks attempts targeting `brain/index.md` before execution.
+- Precise Pi-tool path: `src/extension/index.ts` listens for `tool_result` from built-in `edit`/`write` touching `brain/` and reindexes after successful mutations.
+- Brain-tool path: `src/tools/brain-tool.ts` rejects `action:write` to `index.md`; successful writes are secret-scanned and then reindex the vault.
 - External-change safety net: `src/brain/watch.ts` implements `watchBrainIndex`, started on `session_start` and stopped on `session_shutdown`; session start also closes any previous watcher before creating a new one.
 
 Implementation details/gotchas:

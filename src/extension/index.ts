@@ -20,6 +20,7 @@ import { buildBrainContext, buildUninitializedContext } from "../brain/inject.js
 import {
 	type BrainSnapshot,
 	getBrainSkillPaths,
+	isBrainIndexPath,
 	loadBrainSnapshot,
 	reindexAfterBrainMutation,
 } from "../brain/session-state.js";
@@ -29,6 +30,7 @@ import { registerLoopCommands } from "../commands/loop-commands.js";
 import { setupAutoReflect } from "../handlers/auto-reflect.js";
 import { registerBrainTool } from "../tools/brain-tool.js";
 import { registerRememberTool } from "../tools/remember-tool.js";
+import { registerRuminateTool } from "../tools/ruminate-tool.js";
 import { bundledSkillsDir } from "./assets.js";
 
 export default function brainmaxxing(pi: ExtensionAPI) {
@@ -82,7 +84,20 @@ export default function brainmaxxing(pi: ExtensionAPI) {
 		return { systemPrompt: `${event.systemPrompt}\n\n${block}` };
 	});
 
-	// ── 4. Auto-rebuild the index when brain files change via edit/write ──
+	// ── 4. Protect the generated root index, then auto-rebuild it after brain edits ──
+	pi.on("tool_call", async (event, ctx) => {
+		if (event.toolName !== "edit" && event.toolName !== "write") return;
+		const target = (event.input as { path?: string } | undefined)?.path;
+		const location = loadBrainSnapshot(ctx.cwd, ops).location;
+		if (!isBrainIndexPath(location.brainDir, target, ctx.cwd)) return;
+
+		const reason =
+			"brain/index.md is auto-maintained by pi-brainmaxxing. " +
+			"Write, edit, add, or remove normal brain notes instead; the index will be rebuilt automatically.";
+		if (ctx.hasUI) ctx.ui.notify(reason, "warning");
+		return { block: true, reason };
+	});
+
 	pi.on("tool_result", async (event, ctx) => {
 		if (event.toolName !== "edit" && event.toolName !== "write") return;
 		const target = (event.input as { path?: string } | undefined)?.path;
@@ -100,6 +115,7 @@ export default function brainmaxxing(pi: ExtensionAPI) {
 	});
 	registerBrainTool(pi);
 	registerRememberTool(pi, memoryReview);
+	registerRuminateTool(pi);
 	registerBrainCommand(pi);
 	registerLoopCommands(pi);
 }

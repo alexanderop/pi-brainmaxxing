@@ -9,4 +9,6 @@ Durable design decisions from the extension discussion:
 - Prefer candidate-first prompts (`summary`, `reason`, `evidence`) over sending a large transcript slice; include recent transcript only for periodic/flush or when evidence is insufficient.
 - Maintain the recursion guard (`PI_BRAIN_AUTO_REFLECT_CHILD=1`), concurrency guard, rate limits, and non-blocking behavior except where flush/compact must await.
 
+Delegation gotcha: Pi does not provide Claude-style subagents/`Task` out of the box. Skill text that says "spawn subagents" is only valid when another extension exposes such a tool. For Pi-native batch work (for example `ruminate`), design capability detection first: use an installed subagent/delegate tool if it is present in the active tool list, otherwise fall back to guarded child Pi runs (`pi -p --no-session --no-skills ...`) or sequential inline processing.
+
 Implementation should preserve the thin extension entry point: event wiring in `src/handlers/auto-reflect.ts`, pure candidate/prompt helpers under `src/brain/`, and safe disk writes only through the existing brain tool path.

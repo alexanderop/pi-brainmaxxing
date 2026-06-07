@@ -9,6 +9,12 @@ description: >-
 
 Mine your Pi session history for brain-worthy knowledge that was never captured. Complements `reflect` (current session) and `meditate` (brain vault audit) by looking at the full archive of past sessions for *this project*.
 
+## Preferred path
+
+Use the `ruminate` tool first. It snapshots the brain, extracts project sessions, splits them into batches, runs bounded child Pi workers, synthesizes a report, and returns proposed changes without editing the brain. Present the report to the user and apply changes only after approval.
+
+The manual process below is the fallback/reference implementation.
+
 ## Process
 
 ### 1. Read the brain

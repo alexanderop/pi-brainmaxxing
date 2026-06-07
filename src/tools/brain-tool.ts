@@ -58,6 +58,7 @@ export function registerBrainTool(pi: ExtensionAPI): void {
 		promptGuidelines: [
 			"Use brain (action:write) to persist durable codebase knowledge, gotchas, and corrections — not plan-specific notes.",
 			"Use brain (action:read) to load a relevant brain file before acting on a topic it may cover.",
+			"Do not write brain/index.md with brain; pi-brainmaxxing rebuilds that root index automatically when brain notes change.",
 		],
 		parameters,
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx: ExtensionContext) {
@@ -76,6 +77,13 @@ export function registerBrainTool(pi: ExtensionAPI): void {
 
 			if (!params.path) throw new Error(`'path' is required for action '${params.action}'`);
 			const abs = resolveInVault(loc.brainDir, params.path);
+
+			if (params.action === "write" && abs === loc.indexFile) {
+				throw new Error(
+					"brain/index.md is auto-maintained. Write, edit, add, or remove normal brain notes instead; " +
+						"the index will be rebuilt automatically.",
+				);
+			}
 
 			if (params.action === "read") {
 				if (!fs.existsSync(abs)) throw new Error(`No such brain file: ${params.path}`);

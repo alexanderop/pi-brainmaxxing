@@ -11,7 +11,7 @@ Persistent memory across sessions. Obsidian vault at `brain/`, committed to the 
 
 The brain is the foundation of the entire workflow — every agent, skill, and session reads it. Low-quality or speculative content degrades everything downstream. Before adding anything, ask: "Does this genuinely improve how the system operates?" If the answer isn't a clear yes, don't write it.
 
-**Writing:** use the `brain` tool (`action:write`) or edit files under `brain/` directly. Either way, `brain/index.md` is rebuilt automatically when files are added or removed — you don't have to hand-maintain the link list, though you should keep curated section indexes (`brain/principles.md`) tidy. The `brain` tool also blocks writes containing apparent secrets, since the vault is committed to git.
+**Writing:** use the `brain` tool (`action:write`) or edit files under `brain/` directly. Either way, `brain/index.md` is rebuilt automatically when files are added or removed — do **not** hand-maintain it. Keep curated section indexes (`brain/principles.md`) tidy. The `brain` tool also blocks writes containing apparent secrets, since the vault is committed to git.
 
 ## Before Writing
 
@@ -35,7 +35,8 @@ brain/
 **Rules:**
 
 - One topic per file. `brain/codebase/deploy-gotchas.md`, not a mega-file.
-- Maintain existing index entrypoints: `brain/index.md`, `brain/principles.md`.
+- Do not edit `brain/index.md` directly; pi-brainmaxxing regenerates it from the markdown files on disk.
+- Maintain curated index entrypoints such as `brain/principles.md`.
 - If you introduce a new top-level category, add an index-style entrypoint for it (links only, no inlined content).
 - `brain/index.md` is the root. Every brain file must be reachable from it.
 - File names: lowercase, hyphenated. `worktree-gotchas.md`.
@@ -52,7 +53,7 @@ Format: `[[section/file-name]]`. Resolution order: same directory, then relative
 
 ## After Writing
 
-Update `brain/index.md` for any files you added or removed. Also update the relevant entrypoint when applicable. Keep indexes link-only and scannable.
+Do not update `brain/index.md` manually; it is regenerated automatically after brain files are added or removed. Update the relevant curated entrypoint when applicable. Keep curated indexes link-only and scannable.
 
 ## Durability Test
 

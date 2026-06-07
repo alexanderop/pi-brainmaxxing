@@ -24,7 +24,8 @@ export function buildBrainContext(indexContent: string): string {
 		"",
 		"- **Read first.** Before acting, read the brain files relevant to your task.",
 		"- **Write** after mistakes, corrections, or notable codebase learnings, using the `brain` tool or by editing files under `brain/`.",
-		"- **Structure.** One topic per file; directories carry `[[wikilink]]` indexes with no inlined content. `brain/index.md` is the root.",
+		"- **Auto-index.** Do not edit `brain/index.md` directly; it is rebuilt automatically when brain notes are added or removed.",
+		"- **Structure.** One topic per file; directories carry `[[wikilink]]` indexes with no inlined content. `brain/index.md` is the generated root.",
 		"",
 		FENCE_NOTE,
 		"",
@@ -40,6 +41,7 @@ export function buildUninitializedContext(): string {
 		"",
 		"This project has no `brain/` vault yet. If the user shares a durable preference, a",
 		"codebase gotcha, or a hard-won lesson worth keeping across sessions, suggest running",
-		"`/brain init` to create one, or create `brain/index.md` directly.",
+		"`/brain init` to create one. Do not create `brain/index.md` directly; the extension",
+		"maintains that generated root index automatically.",
 	].join("\n");
 }

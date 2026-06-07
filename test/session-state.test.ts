@@ -3,6 +3,7 @@ import type { LocateOperations } from "../src/brain/locate.ts";
 import type { ReindexOperations } from "../src/brain/reindex.ts";
 import {
 	getBrainSkillPaths,
+	isBrainIndexPath,
 	isInsideBrainPath,
 	loadBrainSnapshot,
 	reindexAfterBrainMutation,
@@ -51,6 +52,14 @@ describe("brain session state", () => {
 		expect(isInsideBrainPath("/repo/brain", "brain/codebase/foo.md", "/repo")).toBe(true);
 		expect(isInsideBrainPath("/repo/brain", "@brain/codebase/foo.md", "/repo")).toBe(true);
 		expect(isInsideBrainPath("/repo/brain", "src/foo.ts", "/repo")).toBe(false);
+	});
+
+	it("recognizes the auto-maintained root index path", () => {
+		expect(isBrainIndexPath("/repo/brain", "/repo/brain/index.md", "/repo")).toBe(true);
+		expect(isBrainIndexPath("/repo/brain", "brain/index.md", "/repo")).toBe(true);
+		expect(isBrainIndexPath("/repo/brain", "@brain/index.md", "/repo")).toBe(true);
+		expect(isBrainIndexPath("/repo/brain", "brain/index.md", "/repo/packages/api")).toBe(true);
+		expect(isBrainIndexPath("/repo/brain", "brain/principles.md", "/repo")).toBe(false);
 	});
 
 	it("reindexes only when a mutation touched the brain", () => {

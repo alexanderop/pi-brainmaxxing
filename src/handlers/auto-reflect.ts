@@ -9,9 +9,11 @@
 
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { type AutoReflectReason, buildAutoReflectPrompt } from "../brain/auto-prompts.js";
+import { AUTO_REFLECT_CHILD_ENV, childPiArgs } from "../brain/child-pi.js";
 import type { MemoryCandidate } from "../brain/memory-candidates.js";
+import { getMessageText } from "../brain/transcript.js";
 
-export const AUTO_REFLECT_CHILD_ENV = "PI_BRAIN_AUTO_REFLECT_CHILD";
+export { AUTO_REFLECT_CHILD_ENV };
 
 const AUTO_REFLECT_TURN_INTERVAL = 10;
 const AUTO_REFLECT_TOOL_CALL_INTERVAL = 15;
@@ -106,26 +108,6 @@ export function isCorrection(text: string): boolean {
 	return false;
 }
 
-function getMessageText(message: unknown): string {
-	if (typeof message !== "object" || message === null) return "";
-	const content = (message as { content?: unknown }).content;
-	if (typeof content === "string") return content.trim();
-	if (!Array.isArray(content)) return "";
-
-	const parts: string[] = [];
-	for (const block of content) {
-		if (typeof block === "string") {
-			parts.push(block);
-			continue;
-		}
-		if (typeof block !== "object" || block === null) continue;
-		const typed = block as { type?: unknown; text?: unknown; content?: unknown };
-		if (typed.type === "text" && typeof typed.text === "string") parts.push(typed.text);
-		else if (typed.type === "text" && typeof typed.content === "string") parts.push(typed.content);
-	}
-	return parts.join("\n").trim();
-}
-
 export function collectTranscriptParts(entries: unknown[], recentMessages = AUTO_REFLECT_RECENT_MESSAGES): string[] {
 	const parts: string[] = [];
 
@@ -141,38 +123,6 @@ export function collectTranscriptParts(entries: unknown[], recentMessages = AUTO
 	}
 
 	return recentMessages > 0 ? parts.slice(-recentMessages) : parts;
-}
-
-function inheritedExtensionArgs(argv: string[] = process.argv.slice(2)): string[] {
-	const args: string[] = [];
-
-	for (let i = 0; i < argv.length; i++) {
-		const current = argv[i];
-		if (!current) continue;
-		if (current === "-e" || current === "--extension") {
-			const next = argv[i + 1];
-			if (next) {
-				args.push(current, next);
-				i++;
-			}
-			continue;
-		}
-		if (current.startsWith("--extension=")) args.push(current);
-	}
-
-	return args;
-}
-
-function childPiArgs(prompt: string): string[] {
-	return [
-		`${AUTO_REFLECT_CHILD_ENV}=1`,
-		"pi",
-		"-p",
-		"--no-session",
-		"--no-skills",
-		...inheritedExtensionArgs(),
-		prompt,
-	];
 }
 
 async function runChildReview(
@@ -192,7 +142,7 @@ async function runChildReview(
 	if (transcriptParts.length === 0 && candidates.length === 0) return false;
 
 	const prompt = buildAutoReflectPrompt({ reason, transcriptParts, candidates });
-	const result = await pi.exec("env", childPiArgs(prompt), {
+	const result = await pi.exec("env", childPiArgs(prompt, [AUTO_REFLECT_CHILD_ENV]), {
 		cwd: ctx.cwd,
 		signal,
 		timeout: timeoutMs,

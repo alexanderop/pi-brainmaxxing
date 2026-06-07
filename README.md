@@ -49,19 +49,13 @@ Install once, globally — it then works in **every** project.
 From a tagged GitHub release:
 
 ```bash
-pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.2
-```
-
-Or from npm:
-
-```bash
-pi install npm:pi-brainmaxxing
+pi install git:github.com/alexanderop/pi-brainmaxxing@v0.1.3
 ```
 
 To pin it in `~/.pi/agent/settings.json`:
 
 ```json
-{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.2"] }
+{ "packages": ["git:github.com/alexanderop/pi-brainmaxxing@v0.1.3"] }
 ```
 
 To try it from source without installing:
@@ -269,10 +263,11 @@ the `tool_result` hook still rebuilds the index.
 ### 5. The auto-index
 
 `brain/index.md` is a pure function of the files on disk — **no LLM involved**, so it's
-cheap and deterministic. It only rewrites when the *set* of files actually changed, so
-your own curated ordering survives edits that don't add or remove notes. Pi tool writes
-trigger a precise post-tool reindex; external editor/git/shell changes are caught by a
-debounced filesystem watcher while the session is running.
+cheap and deterministic. Do not hand-edit it; edit normal brain notes instead. Pi blocks
+LLM `edit`/`write`/`brain` tool attempts that target the generated root index and tells
+the model to change notes instead. Pi tool writes trigger a precise post-tool reindex;
+external editor/git/shell changes are caught by a debounced filesystem watcher while the
+session is running.
 
 ```
   brain/ on disk                          brain/index.md (generated)
@@ -405,8 +400,8 @@ Release flow:
 ```bash
 git status --porcelain=v1 -b
 git add .
-git commit -m "chore: prepare v0.1.2 release"
-git tag -a v0.1.2 -m "v0.1.2"
+git commit -m "chore: prepare v0.1.3 release"
+git tag -a v0.1.3 -m "v0.1.3"
 git push origin main --tags
 ```
 

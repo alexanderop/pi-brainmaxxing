@@ -6,7 +6,9 @@
 - [[codebase/memory-delegation]]
 - [[codebase/memory-delegation-tool]]
 - [[codebase/pi-style-alignment]]
+- [[codebase/pi-tool-result-shape]]
 - [[codebase/release-workflow]]
+- [[codebase/ruminate-tool-design]]
 
 ## Plans
 - [[plans/index]]

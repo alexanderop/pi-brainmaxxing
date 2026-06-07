@@ -8,9 +8,15 @@ import brainmaxxing from "../src/extension/index.ts";
  * Minimal ExtensionAPI mock that records registrations and lets the test fire
  * lifecycle events. Exercises the real extension wiring offline.
  */
+interface ToolDef {
+	name: string;
+	execute?: (...args: unknown[]) => unknown;
+}
+
 interface Recorder {
 	handlers: Map<string, Array<(event: unknown, ctx: unknown) => unknown>>;
 	tools: string[];
+	toolDefs: Map<string, ToolDef>;
 	commands: Map<string, (args: string, ctx: unknown) => unknown>;
 	sentUserMessages: string[];
 	fire(event: string, payload: unknown, ctx: unknown): Promise<unknown[]>;
@@ -21,6 +27,7 @@ function makeMockPi(): { pi: unknown; rec: Recorder } {
 	const rec: Recorder = {
 		handlers,
 		tools: [],
+		toolDefs: new Map(),
 		commands: new Map(),
 		sentUserMessages: [],
 		async fire(event, payload, ctx) {
@@ -35,8 +42,9 @@ function makeMockPi(): { pi: unknown; rec: Recorder } {
 			list.push(handler);
 			handlers.set(event, list);
 		},
-		registerTool(def: { name: string }) {
+		registerTool(def: ToolDef) {
 			rec.tools.push(def.name);
+			rec.toolDefs.set(def.name, def);
 		},
 		registerCommand(name: string, opts: { handler: (args: string, ctx: unknown) => unknown }) {
 			rec.commands.set(name, opts.handler);
@@ -68,11 +76,12 @@ describe("brainmaxxing extension wiring", () => {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	});
 
-	it("registers the brain and remember tools and loop commands", () => {
+	it("registers the brain, remember, and ruminate tools and loop commands", () => {
 		const { pi, rec } = makeMockPi();
 		brainmaxxing(pi as never);
 		expect(rec.tools).toContain("brain");
 		expect(rec.tools).toContain("remember");
+		expect(rec.tools).toContain("ruminate");
 		expect([...rec.commands.keys()]).toEqual(
 			expect.arrayContaining(["brain", "reflect", "ruminate", "meditate", "plan", "review"]),
 		);
@@ -140,6 +149,36 @@ describe("brainmaxxing extension wiring", () => {
 		expect(index).toContain("[[codebase/gotcha]]");
 	});
 
+	it("blocks built-in edit/write attempts against the generated root index", async () => {
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+
+		const result = (
+			await rec.fire("tool_call", { toolName: "write", input: { path: "brain/index.md" } }, ctxFor(tmp))
+		)[0];
+
+		expect(result).toEqual({
+			block: true,
+			reason: expect.stringContaining("brain/index.md is auto-maintained"),
+		});
+	});
+
+	it("blocks brain tool writes against the generated root index", async () => {
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+		const brain = rec.toolDefs.get("brain");
+
+		await expect(
+			brain?.execute?.(
+				"tool-call-id",
+				{ action: "write", path: "index.md", content: "# Brain\n" },
+				undefined,
+				undefined,
+				ctxFor(tmp),
+			),
+		).rejects.toThrow("brain/index.md is auto-maintained");
+	});
+
 	it("asks before initializing when existing docs are detected", async () => {
 		fs.writeFileSync(path.join(tmp, "AGENTS.md"), "# Agents\n");
 		fs.mkdirSync(path.join(tmp, "docs"));
@@ -181,5 +220,18 @@ describe("brainmaxxing extension wiring", () => {
 		await reflect?.("focus on the deploy bug", ctxFor(tmp));
 
 		expect(rec.sentUserMessages).toEqual(["/skill:reflect focus on the deploy bug"]);
+	});
+
+	it("routes /ruminate through the self-contained ruminate tool", async () => {
+		const { pi, rec } = makeMockPi();
+		brainmaxxing(pi as never);
+
+		const ruminate = rec.commands.get("ruminate");
+		expect(ruminate).toBeDefined();
+		await ruminate?.("from last month", ctxFor(tmp));
+
+		expect(rec.sentUserMessages).toEqual([
+			"Use the ruminate tool to mine past sessions from last month. Present the report and do not apply changes without approval.",
+		]);
 	});
 });

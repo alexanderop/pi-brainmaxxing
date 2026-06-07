@@ -33,11 +33,25 @@ export function loadBrainSnapshot(cwd: string, ops: BrainRuntimeOperations): Bra
 }
 
 /** True if a tool input path resolves to a path inside the current brain vault. */
-export function isInsideBrainPath(brainDir: string, target: string | undefined, cwd: string): boolean {
-	if (!target) return false;
+export function resolveToolPath(cwd: string, target: string | undefined): string | undefined {
+	if (!target) return undefined;
 	const normalized = target.replace(/^@/, "");
-	const abs = path.isAbsolute(normalized) ? normalized : path.resolve(cwd, normalized);
+	return path.isAbsolute(normalized) ? normalized : path.resolve(cwd, normalized);
+}
+
+/** True if a tool input path resolves to a path inside the current brain vault. */
+export function isInsideBrainPath(brainDir: string, target: string | undefined, cwd: string): boolean {
+	const abs = resolveToolPath(cwd, target);
+	if (!abs) return false;
 	return abs === brainDir || abs.startsWith(brainDir + path.sep);
+}
+
+/** True if a tool input path resolves to the auto-maintained root index. */
+export function isBrainIndexPath(brainDir: string, target: string | undefined, cwd: string): boolean {
+	const abs = resolveToolPath(cwd, target);
+	if (!abs) return false;
+	if (abs === path.join(brainDir, "index.md")) return true;
+	return path.basename(abs) === "index.md" && path.basename(path.dirname(abs)) === "brain";
 }
 
 /** Skill paths contributed by this extension for the current project. */
